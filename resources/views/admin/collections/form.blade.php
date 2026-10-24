@@ -121,7 +121,7 @@
                 <x-form.select name="icon" label="Ikon" :search="false" placeholder="Otomatis (ditebak dari nama)" :selected="$collection->icon"
                     :options="ProductCollection::ICONS" />
                 <x-form.image-upload name="image" label="Foto" optional :current="$collection->imageUrl()" remove-name="remove_image" :max-kb="3072"
-                    aspect="aspect-[4/3]" hint="Opsional. Bila diisi, ubin memakai foto ini (rasio 4:3, min. 1200 px) menggantikan warna & ikon." />
+                    aspect="aspect-[4/3]" hint="Opsional. Dipakai di ubin beranda (menggantikan warna & ikon) dan di hero halaman koleksi. Foto lanskap min. 1600 px." />
             </section>
 
             <button class="btn btn-primary w-full py-3">{{ $editing ? 'Simpan perubahan' : 'Simpan koleksi' }}</button>

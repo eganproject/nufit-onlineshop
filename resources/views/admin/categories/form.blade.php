@@ -32,7 +32,8 @@
                     <input type="checkbox" name="is_active" value="1" class="checkbox size-5" @checked(old('is_active', $category->is_active))>
                 </label>
                 <x-form.number name="sort_order" label="Urutan tampil" :value="$category->sort_order ?? 0" min="0" />
-                <x-form.image-upload name="image" label="Gambar" optional :current="$category->imageUrl()" remove-name="remove_image" />
+                <x-form.image-upload name="image" label="Gambar" optional :current="$category->imageUrl()" remove-name="remove_image"
+                    hint="Opsional. Tampil di hero halaman kategori (subkategori tanpa gambar memakai gambar induknya). Foto lanskap min. 1600 px." />
             </div>
             <button class="btn btn-primary w-full py-3">{{ $editing ? 'Simpan perubahan' : 'Simpan kategori' }}</button>
         </div>

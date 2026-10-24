@@ -33,6 +33,8 @@
     $metaDescription = $context
         ? ($context->description ?: 'Belanja '.$context->name.' original di '.config('shop.full_name').'. Harga terjangkau, kirim ke seluruh Indonesia.')
         : null;
+    $showHero = $context && ! request('q');
+    $heroImage = $activeCategory?->imageUrl() ?: $activeCategory?->parent?->imageUrl() ?: $activeCollection?->imageUrl();
     $intro = $activeCategory?->description
         ?: ($activeCollection && ! $activeCategory ? ($activeCollection->tagline ?: $activeCollection->description) : null)
         ?: (request('q') ? 'Produk yang cocok dengan pencarianmu.' : (request()->boolean('promo') ? 'Harga spesial untuk perlengkapan favorit, selama stok masih ada.' : 'Perlengkapan lari, yoga, workout, padel, renang, dan lainnya untuk menemani latihanmu.'));
@@ -68,9 +70,22 @@
                     @endif
                 </nav>
 
-                <div class="mt-6 flex flex-col gap-4 lg:mt-8 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
-                    <div class="min-w-0">
-                        <p class="kicker">
+                @if ($showHero)
+                    {{-- Hero: teks + gambar kategori/koleksi (cadangan: ilustrasi lintasan) --}}
+                    <div class="relative isolate mt-4 grid overflow-hidden rounded-[24px] bg-ink max-lg:min-h-[260px] sm:max-lg:min-h-[300px] lg:mt-6 lg:min-h-[300px] lg:grid-cols-12 lg:rounded-[28px] lg:bg-sand-100">
+                        <div class="absolute inset-0 -z-10 lg:relative lg:inset-auto lg:z-0 lg:order-2 lg:col-span-7">
+                            @if ($heroImage)
+                                <img src="{{ $heroImage }}" alt="" fetchpriority="high" decoding="async" class="absolute inset-0 size-full object-cover">
+                            @else
+                                <img src="{{ asset('images/hero/hero-default.svg') }}" alt="" decoding="async" class="absolute inset-0 size-full object-cover object-right">
+                                <x-sport-icon :for="$context->name.' '.$context->slug" class="absolute top-6 right-6 size-14 text-brand-400/40 sm:top-8 sm:right-8 lg:top-1/2 lg:right-[12%] lg:size-28 lg:-translate-y-1/2" />
+                            @endif
+                            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/10 lg:hidden"></div>
+                        </div>
+
+                        <div class="flex flex-col justify-end p-6 text-white sm:p-8 lg:order-1 lg:col-span-5 lg:justify-center lg:p-12 lg:text-ink">
+                            <p class="kicker max-lg:text-white/70">
+
                             @if ($activeCollection && $activeCategory)
                                 {{ $activeCollection->name }}
                             @elseif ($activeCollection)
@@ -83,10 +98,31 @@
                                 Katalog {{ config('shop.name') }}
                             @endif
                         </p>
-                        <h1 class="display mt-3 text-[2.1rem] leading-[1.02] break-words sm:text-5xl lg:text-6xl">{{ $heading }}</h1>
+                            <h1 class="display mt-3 text-[2.1rem] leading-[1.02] break-words sm:text-5xl lg:text-[3.4rem]">{{ $heading }}</h1>
+                            <p class="mt-3 max-w-md text-sm leading-relaxed text-white/75 sm:text-[15px] lg:text-stone-600">{{ $intro }}</p>
+                        </div>
                     </div>
-                    <p class="max-w-md text-sm leading-relaxed text-stone-500 sm:text-[15px] lg:pb-1 lg:text-right">{{ $intro }}</p>
-                </div>
+                @else
+                    <div class="mt-6 flex flex-col gap-4 lg:mt-8 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
+                        <div class="min-w-0">
+                            <p class="kicker">
+                                @if ($activeCollection && $activeCategory)
+                                    {{ $activeCollection->name }}
+                                @elseif ($activeCollection)
+                                    Aktivitas
+                                @elseif ($activeCategory?->parent)
+                                    {{ $activeCategory->parent->name }}
+                                @elseif ($activeCategory)
+                                    Kategori
+                                @else
+                                    Katalog {{ config('shop.name') }}
+                                @endif
+                            </p>
+                            <h1 class="display mt-3 text-[2.1rem] leading-[1.02] break-words sm:text-5xl lg:text-6xl">{{ $heading }}</h1>
+                        </div>
+                        <p class="max-w-md text-sm leading-relaxed text-stone-500 sm:text-[15px] lg:pb-1 lg:text-right">{{ $intro }}</p>
+                    </div>
+                @endif
 
                 {{-- Pilihan aktivitas (koleksi) --}}
                 @if ($collections->isNotEmpty())

@@ -47,6 +47,18 @@ class CatalogTest extends TestCase
         ], $overrides);
     }
 
+    public function test_category_page_hero_uses_category_image_or_falls_back_to_illustration(): void
+    {
+        $parent = Category::factory()->create(['name' => 'Lari', 'image_path' => 'categories/lari.jpg']);
+        $child = Category::factory()->create(['name' => 'Sepatu Lari', 'parent_id' => $parent->id]);
+        $plain = Category::factory()->create(['name' => 'Renang']);
+
+        $this->get(route('products.index', ['kategori' => $parent->slug]))->assertOk()->assertSee('categories/lari.jpg');
+        // Subkategori tanpa gambar memakai gambar induknya.
+        $this->get(route('products.index', ['kategori' => $child->slug]))->assertOk()->assertSee('categories/lari.jpg');
+        $this->get(route('products.index', ['kategori' => $plain->slug]))->assertOk()->assertSee('images/hero/hero-default.svg');
+    }
+
     public function test_admin_creates_product_with_variants_and_summary_is_synced(): void
     {
         $this->actingAs($this->admin)->post(route('admin.products.store'), $this->variantPayload())
