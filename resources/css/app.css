@@ -142,6 +142,34 @@
     .field-error {
         @apply mt-1.5 flex items-start gap-1 text-xs font-medium text-rose-600;
     }
+
+    /* Tooltip info (<x-info-tip>): ikon kecil di samping label + panel gelap. */
+    .info-tip {
+        @apply relative ml-1 inline-flex align-[-3px];
+    }
+    .info-tip-btn {
+        @apply relative grid size-4 cursor-help place-items-center rounded-full text-stone-400 transition hover:text-brand-600 focus-visible:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 aria-expanded:text-brand-600;
+    }
+    /* Area sentuh lebih besar tanpa memperbesar ikon. */
+    .info-tip-btn::before {
+        content: '';
+        @apply absolute -inset-2.5;
+    }
+    .info-tip-panel {
+        @apply fixed z-[70] block rounded-xl bg-stone-900 px-3.5 py-3 text-left text-[13px] leading-relaxed font-normal tracking-normal text-stone-200 normal-case shadow-xl shadow-stone-900/20 ring-1 ring-white/10;
+    }
+    .info-tip-line {
+        @apply block;
+    }
+    .info-tip-line + .info-tip-line {
+        @apply mt-1.5;
+    }
+    .info-tip-arrow {
+        @apply absolute -bottom-1 size-2.5 -translate-x-1/2 rotate-45 rounded-[2px] bg-stone-900;
+    }
+    .info-tip-panel.is-bottom .info-tip-arrow {
+        @apply -top-1 bottom-auto;
+    }
     /* Sembunyikan panah bawaan input number (dipakai stepper). */
     .no-spinner {
         appearance: textfield;

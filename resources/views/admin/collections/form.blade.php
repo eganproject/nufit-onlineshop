@@ -28,10 +28,13 @@
             <section class="card space-y-5 p-6">
                 <x-form.input name="name" label="Nama koleksi" :value="$collection->name" required maxlength="100" placeholder="Contoh: Running" />
                 <x-form.input name="tagline" label="Teks pendek" optional :value="$collection->tagline" maxlength="120"
-                    placeholder="Contoh: Lari lebih jauh, lebih nyaman" hint="Tampil di ubin besar beranda dan kepala halaman koleksi." />
+                    placeholder="Contoh: Lari lebih jauh, lebih nyaman" hint="Satu kalimat pendek tentang manfaat koleksi."
+                    :tip="['Tampil di' => 'ubin besar “Belanja per aktivitas” di beranda (khusus koleksi urutan pertama) dan di bawah judul hero halaman koleksi.', 'Tips' => '4–8 kata yang menggambarkan manfaat, bukan daftar produk. Contoh: “Lari lebih jauh, lebih nyaman”.']" />
                 <x-form.textarea name="description" label="Deskripsi" optional :value="$collection->description" rows="3" maxlength="1000"
-                    hint="Untuk halaman koleksi & mesin pencari." />
-                <x-form.input name="slug" label="Slug URL" optional="kosongkan untuk otomatis" :value="$collection->slug" maxlength="120" />
+                    hint="Untuk halaman koleksi & mesin pencari."
+                    :tip="['Dipakai untuk' => 'deskripsi halaman di hasil pencarian Google, dan teks hero halaman koleksi bila Teks pendek kosong.', 'Tips' => '1–2 kalimat (±150 karakter) yang menyebut aktivitas & jenis produknya, mis. “Sepatu, kaos kaki, dan running belt untuk lari harian sampai maraton.”']" />
+                <x-form.input name="slug" label="Slug URL" optional="kosongkan untuk otomatis" :value="$collection->slug" maxlength="120"
+                    :tip="['Bagian alamat halaman koleksi: /produk?koleksi=slug.', 'Kosongkan supaya dibuat otomatis dari nama. Hindari mengganti slug yang sudah dibagikan, karena link lama tidak lagi membuka koleksi ini.']" />
             </section>
 
             {{-- Isi koleksi --}}
@@ -103,25 +106,34 @@
         <div class="space-y-6">
             <section class="card space-y-5 p-6">
                 <label class="flex items-center justify-between gap-3">
-                    <span><span class="block text-sm font-semibold text-stone-800">Aktif di toko</span><span class="text-xs text-stone-500">Muncul di menu & filter katalog</span></span>
+                    <span><span class="block text-sm font-semibold text-stone-800">Aktif di toko<x-info-tip label="Aktif di toko" text="Matikan untuk menyembunyikan koleksi dari menu, filter katalog, dan beranda tanpa menghapusnya. Produk di dalamnya tetap dijual." /></span><span class="text-xs text-stone-500">Muncul di menu & filter katalog</span></span>
                     <input type="checkbox" name="is_active" value="1" class="checkbox size-5" @checked(old('is_active', $collection->is_active))>
                 </label>
                 <label class="flex items-center justify-between gap-3">
-                    <span><span class="block text-sm font-semibold text-stone-800">Tampil di beranda</span><span class="text-xs text-stone-500">Sebagai ubin "Belanja per aktivitas"</span></span>
+                    <span><span class="block text-sm font-semibold text-stone-800">Tampil di beranda<x-info-tip label="Tampil di beranda" :text="['Koleksi aktif yang dicentang tampil sebagai ubin di seksi “Belanja per aktivitas” dan sebagai tombol “Pilih aktivitasmu” di bawah hero (maks. 8).', 'Berlaku bila Isi ubin di Tampilan Beranda = Otomatis atau Koleksi.']" /></span><span class="text-xs text-stone-500">Sebagai ubin "Belanja per aktivitas"</span></span>
                     <input type="checkbox" name="show_on_home" value="1" class="checkbox size-5" @checked(old('show_on_home', $collection->show_on_home))>
                 </label>
                 <x-form.number name="sort_order" label="Urutan tampil" :value="$collection->sort_order ?? 0" min="0"
-                    hint="Kecil tampil dulu. Urutan pertama jadi ubin besar di beranda." />
+                    hint="Kecil tampil dulu. Urutan pertama jadi ubin besar di beranda."
+                    :tip="['Angka kecil tampil lebih dulu di beranda, menu, dan filter katalog.', 'Koleksi urutan pertama jadi ubin besar (2×2) lengkap dengan teks pendek & kategori di dalamnya, jadi pilih koleksi andalan.', 'Tips' => 'beri jarak 10, 20, 30 supaya mudah menyisipkan koleksi baru di tengah.']" />
             </section>
 
             <section class="card space-y-5 p-6">
                 <h2 class="font-bold text-stone-900">Tampilan ubin</h2>
                 <x-form.select name="tone" label="Warna" :search="false" placeholder="Otomatis (bergantian)" :selected="$collection->tone"
+                    tip="Warna latar ubin di beranda, hanya dipakai bila koleksi tidak punya foto. Otomatis = bergantian dari palet bawaan toko."
                     :options="collect(ProductCollection::TONES)->map(fn ($t) => $t[2])->all()" />
                 <x-form.select name="icon" label="Ikon" :search="false" placeholder="Otomatis (ditebak dari nama)" :selected="$collection->icon"
+                    tip="Ikon olahraga di tombol “Pilih aktivitasmu” di hero beranda, dan di ubin beranda bila tanpa foto. Otomatis = ditebak dari nama koleksi (mis. Running → ikon lari)."
                     :options="ProductCollection::ICONS" />
                 <x-form.image-upload name="image" label="Foto" optional :current="$collection->imageUrl()" remove-name="remove_image" :max-kb="3072"
-                    aspect="aspect-[4/3]" hint="Opsional. Dipakai di ubin beranda (menggantikan warna & ikon) dan di hero halaman koleksi. Foto lanskap min. 1600 px." />
+                    aspect="aspect-[3/2]" hint="Opsional. Lanskap 3:2, mis. 1600×1067 px."
+                    :tip="[
+                        'Tampil di' => '(1) ubin “Belanja per aktivitas” di beranda, menggantikan warna & ikon; (2) hero halaman koleksi: sisi kanan di desktop, latar penuh di HP.',
+                        'Ukuran ideal' => 'lanskap 3:2, mis. 1600×1067 px (lebar min. 1200 px). JPG/WebP, maks. 3 MB.',
+                        'Komposisi' => 'objek utama di tengah dengan ruang lega di sekelilingnya. Ubin di HP hampir persegi dan hero desktop lebih lebar, jadi tepi kiri-kanan atau atas-bawah bisa terpotong.',
+                        'Hindari' => 'tulisan di dalam foto. Bagian bawah foto digelapkan untuk nama koleksi.',
+                    ]" />
             </section>
 
             <button class="btn btn-primary w-full py-3">{{ $editing ? 'Simpan perubahan' : 'Simpan koleksi' }}</button>

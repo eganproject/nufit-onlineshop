@@ -21,10 +21,13 @@
                     <div><h2 class="font-bold text-stone-900">Identitas toko</h2><p class="text-xs text-stone-500">Tampil di judul halaman, email, invoice, dan footer.</p></div>
                 </div>
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <x-form.input name="name" label="Nama singkat" :value="$values['name']" required maxlength="30" />
-                    <x-form.input name="full_name" label="Nama lengkap" :value="$values['full_name']" required maxlength="80" />
+                    <x-form.input name="name" label="Nama singkat" :value="$values['name']" required maxlength="30"
+                        tip="Nama pendek untuk tempat sempit, mis. pesan WhatsApp dan judul seksi “Kenapa …” di beranda. Contoh: NuFit." />
+                    <x-form.input name="full_name" label="Nama lengkap" :value="$values['full_name']" required maxlength="80"
+                        tip="Nama resmi toko di judul tab browser & hasil Google, email, dan invoice. Contoh: NuFit Sport Store." />
                 </div>
-                <x-form.input name="tagline" label="Tagline" :value="$values['tagline']" maxlength="160" optional />
+                <x-form.input name="tagline" label="Tagline" :value="$values['tagline']" maxlength="160" optional
+                    tip="Slogan singkat di footer, judul tab beranda, dan email. Juga dipakai sebagai deskripsi Google untuk produk tanpa deskripsi. Buat 1 kalimat pendek tanpa titik di akhir." />
                 <x-form.textarea name="address" label="Alamat gudang / pengirim" :value="$values['address']" rows="3" maxlength="500" optional
                                  placeholder="Jl. ..., Kecamatan, Kota, Kode pos"
                                  :hint="trim('Dicetak di invoice dan packing slip. '.$envHint('address'))" />
@@ -37,7 +40,8 @@
                     <div><h2 class="font-bold text-stone-900">Kontak & media sosial</h2><p class="text-xs text-stone-500">Dipakai untuk tombol WhatsApp dan tautan profil toko.</p></div>
                 </div>
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <x-form.phone name="whatsapp" label="No. WhatsApp" :value="$values['whatsapp']" placeholder="0812-3456-7890" hint="Disimpan dalam format 62xxx." optional />
+                    <x-form.phone name="whatsapp" label="No. WhatsApp" :value="$values['whatsapp']" placeholder="0812-3456-7890" hint="Disimpan dalam format 62xxx." optional
+                        tip="Nomor tujuan tombol WhatsApp melayang dan link Bantuan di toko. Pakai nomor yang selalu aktif, sebaiknya WhatsApp Business." />
                     <x-form.input type="email" name="email" label="Email kontak" icon="envelope" :value="$values['email']" placeholder="halo@tokoanda.com" optional />
                     <x-form.input name="instagram" label="Instagram" prefix="@" :value="$values['instagram']" placeholder="username" optional />
                     <x-form.input name="tiktok" label="TikTok" prefix="@" :value="$values['tiktok']" placeholder="username" optional />
@@ -73,7 +77,8 @@
                         ['city', 'city_id', 'Kota / Kabupaten'],
                         ['district', 'district_id', 'Kecamatan'],
                     ] as [$ref, $field, $text])
-                        <x-form.field :label="$text" :for="$field" :name="$field">
+                        <x-form.field :label="$text" :for="$field" :name="$field"
+                            :tip="$field === 'district_id' ? 'Kecamatan gudang/asal paket. Ongkir di checkout dihitung dari sini ke alamat pembeli, jadi harus sesuai lokasi pengiriman sebenarnya.' : null">
                             <select id="{{ $field }}" name="{{ $field }}" x-ref="{{ $ref }}" @class(['input', 'input-error' => $errors->has($field)])></select>
                         </x-form.field>
                     @endforeach
@@ -82,7 +87,7 @@
                 <p class="hint">Biarkan seperti semula bila kecamatan asal tidak berubah.</p>
 
                 <div>
-                    <p class="label">Kurir yang ditawarkan di checkout</p>
+                    <p class="label">Kurir yang ditawarkan di checkout<x-info-tip label="Kurir yang ditawarkan di checkout" text="Hanya kurir yang dicentang yang muncul sebagai pilihan ongkir di checkout. Centang kurir yang benar-benar melayani pengiriman dari gudang Anda." /></p>
                     <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         @foreach ($couriers as $code => $label)
                             <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-stone-200 px-3 py-2.5 text-sm font-semibold text-stone-700 transition has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
@@ -116,9 +121,11 @@
                     <div><h2 class="font-bold text-stone-900">Pesanan & pembayaran</h2></div>
                 </div>
                 <x-form.number name="payment_expiry_hours" label="Batas waktu bayar" :value="$values['payment_expiry_hours']" min="1" max="168" required suffix="jam"
-                               hint="Lewat dari ini pesanan dibatalkan otomatis dan stok kembali. Berlaku untuk pesanan baru." />
+                               hint="Lewat dari ini pesanan dibatalkan otomatis dan stok kembali. Berlaku untuk pesanan baru."
+                               tip="Disarankan 24 jam. Terlalu pendek membuat pembeli yang transfer kehabisan waktu; terlalu panjang membuat stok tertahan oleh pesanan yang tidak dibayar." />
                 <x-form.number name="auto_complete_days" label="Selesai otomatis setelah sampai" :value="$values['auto_complete_days']" min="1" max="30" required suffix="hari"
-                               hint='Bila pelanggan tidak menekan "Pesanan diterima".' />
+                               hint='Bila pelanggan tidak menekan "Pesanan diterima".'
+                               tip="Pesanan yang sudah sampai otomatis ditandai Selesai setelah sekian hari. Disarankan 3–7 hari supaya pelanggan sempat komplain bila ada masalah." />
             </section>
 
             <div class="flex gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800">

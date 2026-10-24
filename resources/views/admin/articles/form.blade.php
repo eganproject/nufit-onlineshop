@@ -112,8 +112,10 @@
                     <p class="mt-1 truncate text-lg leading-snug text-[#1a0dab]" x-text="(metaTitle || title || 'Judul artikel') + ' · {{ config('shop.name') }}'"></p>
                     <p class="mt-1 line-clamp-2 text-sm text-stone-600" x-text="metaDescription || excerpt || 'Ringkasan artikel akan tampil di sini.'"></p>
                 </div>
-                <x-form.input name="meta_title" label="Judul SEO" optional maxlength="70" x-model="metaTitle" :value="$article->meta_title" hint="Idealnya 50–60 karakter." />
-                <x-form.textarea name="meta_description" label="Deskripsi SEO" optional maxlength="160" rows="2" x-model="metaDescription" :value="$article->meta_description" hint="Idealnya 120–160 karakter." />
+                <x-form.input name="meta_title" label="Judul SEO" optional maxlength="70" x-model="metaTitle" :value="$article->meta_title" hint="Idealnya 50–60 karakter."
+                    tip="Judul yang tampil di hasil Google dan tab browser. Kosong = judul artikel. Taruh kata kunci utama di awal, mis. “Cara memilih sepatu lari untuk pemula”." />
+                <x-form.textarea name="meta_description" label="Deskripsi SEO" optional maxlength="160" rows="2" x-model="metaDescription" :value="$article->meta_description" hint="Idealnya 120–160 karakter."
+                    tip="Teks di bawah judul pada hasil Google. Kosong = Ringkasan. Sebutkan manfaat membaca supaya orang tertarik mengklik." />
             </div>
         </div>
 
@@ -147,7 +149,12 @@
             <div class="card p-6">
                 <x-form.image-upload name="cover_image" label="Gambar sampul" optional :current="$article->coverUrl()"
                     remove-name="remove_cover_image" aspect="aspect-[16/9]" :max-kb="4096"
-                    hint="Rasio 16:9, mis. 1600×900 px. Juga dipakai saat dibagikan ke WhatsApp/Facebook." />
+                    hint="Rasio 16:9, mis. 1600×900 px. Juga dipakai saat dibagikan ke WhatsApp/Facebook."
+                    :tip="[
+                        'Tampil di' => 'kartu artikel di beranda & daftar artikel (16:10), bagian atas halaman artikel (16:9), dan pratinjau saat link dibagikan ke WhatsApp/Facebook.',
+                        'Ukuran ideal' => '1600×900 px (16:9), JPG/WebP di bawah 1 MB.',
+                        'Komposisi' => 'objek di tengah; tepi kiri-kanan sedikit terpotong di kartu. Hindari tulisan kecil di gambar.',
+                    ]" />
             </div>
 
             <div class="card space-y-5 p-6">

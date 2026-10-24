@@ -15,14 +15,14 @@
             <div class="card space-y-5 p-6">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
-                        <label for="code" class="label">Kode voucher</label>
+                        <label for="code" class="label">Kode voucher<x-info-tip label="Kode voucher" text="Kode yang diketik pelanggan di checkout. Pilih yang singkat & mudah diingat, mis. HEMAT10 atau NUFITBARU. Satu kode hanya untuk satu voucher." /></label>
                         <input id="code" name="code" value="{{ old('code', $voucher->code) }}" required maxlength="32" autocomplete="off"
                                placeholder="HEMAT10" class="input font-mono uppercase placeholder:normal-case @error('code') input-error @enderror">
                         <p class="mt-1.5 text-xs text-stone-400">Huruf, angka, - dan _. Otomatis huruf besar.</p>
                         <x-input-error for="code" />
                     </div>
                     <div>
-                        <label for="name" class="label">Nama voucher</label>
+                        <label for="name" class="label">Nama voucher<x-info-tip label="Nama voucher" text="Nama yang dilihat pelanggan di checkout. Jelaskan manfaatnya, mis. “Diskon 10% pengguna baru”." /></label>
                         <input id="name" name="name" value="{{ old('name', $voucher->name) }}" required maxlength="100" placeholder="Diskon pengguna baru" class="input @error('name') input-error @enderror">
                         <x-input-error for="name" />
                     </div>
@@ -60,6 +60,7 @@
                             <span x-show="type === 'percent'">Persentase diskon (%)</span>
                             <span x-show="type === 'fixed'" x-cloak>Nominal potongan (Rp)</span>
                             <span x-show="type === 'free_shipping'" x-cloak>Maksimal ongkir ditanggung (Rp)</span>
+                            <x-info-tip label="Nilai voucher" :text="['Persen' => 'potongan % dari subtotal barang (1–100).', 'Nominal' => 'potongan rupiah tetap dari subtotal barang.', 'Gratis ongkir' => 'batas ongkir yang ditanggung toko; isi 0 untuk menanggung penuh.']" />
                         </label>
                         <div class="relative" x-data>
                             <span class="input-addon" x-show="type !== 'percent'" x-cloak>Rp</span>
@@ -71,10 +72,12 @@
                         <x-input-error for="value" />
                     </div>
                     <div x-show="type === 'percent'">
-                        <x-form.money name="max_discount" label="Maksimal diskon" optional :value="$voucher->max_discount" placeholder="Tanpa batas" />
+                        <x-form.money name="max_discount" label="Maksimal diskon" optional :value="$voucher->max_discount" placeholder="Tanpa batas"
+                                      tip="Batas potongan untuk voucher persen, mis. 10% maks. Rp25.000. Disarankan diisi supaya potongan di belanja besar tetap terkendali. Kosong = tanpa batas." />
                     </div>
                     <x-form.money name="min_spend" label="Minimal belanja" :value="$voucher->min_spend" placeholder="0"
-                                  hint="Dihitung dari subtotal barang, sebelum ongkir." />
+                                  hint="Dihitung dari subtotal barang, sebelum ongkir."
+                                  tip="Voucher baru bisa dipakai bila subtotal barang (sebelum ongkir & potongan) mencapai angka ini. Isi 0 untuk tanpa minimum." />
                 </div>
             </div>
 
@@ -82,10 +85,14 @@
                 <h2 class="font-bold text-stone-900">Batas pemakaian & periode</h2>
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-form.number name="quota" label="Kuota total" optional :value="$voucher->quota" min="1" placeholder="Tanpa batas"
-                                   :hint="$editing ? 'Sudah dipakai '.$used.' kali. Pesanan batal mengembalikan kuota.' : null" />
-                    <x-form.number name="per_user_limit" label="Batas per pelanggan" optional :value="$voucher->per_user_limit" min="1" placeholder="Tanpa batas" />
-                    <x-form.date name="starts_at" label="Mulai berlaku" optional time :value="$voucher->starts_at" />
-                    <x-form.date name="ends_at" label="Berakhir" optional time :value="$voucher->ends_at" />
+                                   :hint="$editing ? 'Sudah dipakai '.$used.' kali. Pesanan batal mengembalikan kuota.' : null"
+                                   tip="Total pemakaian untuk semua pelanggan. Kuota terpakai saat pesanan dibuat dan kembali bila pesanan dibatalkan/kedaluwarsa. Kosong = tanpa batas." />
+                    <x-form.number name="per_user_limit" label="Batas per pelanggan" optional :value="$voucher->per_user_limit" min="1" placeholder="Tanpa batas"
+                                   tip="Berapa kali satu akun pelanggan boleh memakai voucher ini. Isi 1 untuk promo sekali pakai, mis. voucher pengguna baru." />
+                    <x-form.date name="starts_at" label="Mulai berlaku" optional time :value="$voucher->starts_at"
+                                 tip="Sebelum waktu ini kode belum bisa dipakai dan voucher tidak muncul di checkout. Kosong = langsung berlaku." />
+                    <x-form.date name="ends_at" label="Berakhir" optional time :value="$voucher->ends_at"
+                                 tip="Setelah waktu ini voucher otomatis tidak bisa dipakai. Kosong = tanpa batas akhir." />
                 </div>
                 <p class="text-xs text-stone-400">Waktu mengikuti zona {{ config('app.timezone') }}.</p>
             </div>
@@ -98,7 +105,7 @@
                     <input type="checkbox" name="is_active" value="1" class="checkbox size-5" @checked(old('is_active', $voucher->is_active))>
                 </label>
                 <label class="flex items-center justify-between gap-3">
-                    <span><span class="block text-sm font-semibold text-stone-800">Tampilkan di checkout</span><span class="text-xs text-stone-500">Pelanggan bisa memilih tanpa mengetik kode</span></span>
+                    <span><span class="block text-sm font-semibold text-stone-800">Tampilkan di checkout<x-info-tip label="Tampilkan di checkout" text="Aktif: voucher muncul sebagai pilihan di checkout untuk semua pelanggan. Matikan untuk voucher “rahasia” yang hanya bisa dipakai dengan mengetik kode, mis. kode khusus Instagram atau reseller." /></span><span class="text-xs text-stone-500">Pelanggan bisa memilih tanpa mengetik kode</span></span>
                     <input type="checkbox" name="is_public" value="1" class="checkbox size-5" @checked(old('is_public', $voucher->is_public))>
                 </label>
             </div>

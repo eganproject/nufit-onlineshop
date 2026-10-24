@@ -1,8 +1,9 @@
 {{--
     Pembungkus isian: label, kontrol (slot), petunjuk, dan pesan error.
-    <x-form.field label="Nama" for="name" name="name" hint="..." optional>
+    <x-form.field label="Nama" for="name" name="name" hint="..." tip="..." optional>
         <input id="name" name="name" class="input">
     </x-form.field>
+    `tip`: penjelasan di tooltip ikon "i" samping label (string, atau array paragraf; lihat x-info-tip).
     `name` dipakai untuk mencari error (boleh "variants[0][price]" atau "variants.0.price").
 --}}
 @props([
@@ -10,6 +11,7 @@
     'for' => null,
     'name' => null,
     'hint' => null,
+    'tip' => null,
     'optional' => false,
     'bag' => 'default',
 ])
@@ -22,6 +24,9 @@
             {{ $label }}{{ $labelSlot ?? '' }}
             @if ($optional)
                 <span class="font-normal text-stone-400">({{ is_string($optional) ? $optional : 'opsional' }})</span>
+            @endif
+            @if ($tip)
+                <x-info-tip :text="$tip" :label="$label" />
             @endif
         </label>
     @endif

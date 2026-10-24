@@ -56,9 +56,10 @@
                         @if ($key === 'midtrans')
                             <div class="grid gap-5 sm:grid-cols-2">
                                 <x-form.select name="midtrans[driver]" id="midtrans_driver" label="Driver pembayaran" :selected="$value('midtrans', 'driver')"
-                                               :options="['fake' => 'Simulasi (fake)', 'midtrans' => 'Midtrans']" :hint="$source('midtrans', 'driver')" />
+                                               :options="['fake' => 'Simulasi (fake)', 'midtrans' => 'Midtrans']" :hint="$source('midtrans', 'driver')"
+                                               tip="Simulasi = pembayaran pura-pura untuk uji coba, tidak ada uang masuk. Pilih Midtrans setelah kunci diisi dan Tes koneksi berhasil." />
                                 <div>
-                                    <p class="label">Mode</p>
+                                    <p class="label">Mode<x-info-tip label="Mode" :text="['Sandbox' => 'uji coba, pakai kunci berawalan SB-.', 'Production' => 'transaksi uang sungguhan, pakai kunci Production (tanpa SB-).', 'Kunci Sandbox & Production berbeda; ganti kuncinya saat mengganti mode.']" /></p>
                                     @php($production = (bool) old('midtrans.is_production', $value('midtrans', 'is_production')))
                                     <div class="grid grid-cols-2 gap-2">
                                         @foreach (['0' => 'Sandbox', '1' => 'Production'] as $mode => $text)
@@ -71,9 +72,11 @@
                                     <p class="hint">Production = uang sungguhan. Kunci Sandbox berawalan "SB-".</p>
                                 </div>
                                 <x-form.input name="midtrans[merchant_id]" id="midtrans_merchant_id" label="Merchant ID" :value="$value('midtrans', 'merchant_id')" placeholder="G123456789" optional :hint="$source('midtrans', 'merchant_id')" />
-                                <x-form.input name="midtrans[client_key]" id="midtrans_client_key" label="Client key" :value="$value('midtrans', 'client_key')" placeholder="SB-Mid-client-..." :hint="$source('midtrans', 'client_key')" spellcheck="false" />
+                                <x-form.input name="midtrans[client_key]" id="midtrans_client_key" label="Client key" :value="$value('midtrans', 'client_key')" placeholder="SB-Mid-client-..." :hint="$source('midtrans', 'client_key')" spellcheck="false"
+                                    tip="Kunci publik untuk membuka popup pembayaran di browser pelanggan. Ada di Midtrans Dashboard › Settings › Access Keys." />
                             </div>
-                            @include('admin.partials.secret-input', ['integration' => 'midtrans', 'name' => 'server_key', 'label' => 'Server key', 'placeholder' => 'SB-Mid-server-...'])
+                            @include('admin.partials.secret-input', ['integration' => 'midtrans', 'name' => 'server_key', 'label' => 'Server key', 'placeholder' => 'SB-Mid-server-...',
+                                'tip' => 'Kunci rahasia untuk membuat transaksi dan memverifikasi notifikasi pembayaran. Ada di Midtrans Dashboard › Settings › Access Keys. Jangan dibagikan.'])
 
                             <div>
                                 <p class="text-xs font-semibold text-stone-500 uppercase">URL notifikasi (webhook)</p>
@@ -87,8 +90,10 @@
                             </div>
                         @elseif ($key === 'rajaongkir')
                             <x-form.select name="rajaongkir[driver]" id="rajaongkir_driver" label="Driver ongkir" :selected="$value('rajaongkir', 'driver')"
-                                           :options="['fake' => 'Simulasi (tarif contoh)', 'rajaongkir' => 'RajaOngkir (Komerce)']" :hint="$source('rajaongkir', 'driver')" />
-                            @include('admin.partials.secret-input', ['integration' => 'rajaongkir', 'name' => 'api_key', 'label' => 'API key', 'placeholder' => 'API key dari dashboard Komerce'])
+                                           :options="['fake' => 'Simulasi (tarif contoh)', 'rajaongkir' => 'RajaOngkir (Komerce)']" :hint="$source('rajaongkir', 'driver')"
+                                           tip="Simulasi = ongkir pakai tarif contoh dan resi tidak bisa dilacak. Pilih RajaOngkir setelah API key diisi dan Tes koneksi berhasil." />
+                            @include('admin.partials.secret-input', ['integration' => 'rajaongkir', 'name' => 'api_key', 'label' => 'API key', 'placeholder' => 'API key dari dashboard Komerce',
+                                'tip' => 'Kunci dari dashboard Komerce (RajaOngkir) untuk cek ongkir & lacak resi. Pastikan paketnya mendukung kurir yang dicentang di Pengaturan Toko.'])
                             <div class="rounded-xl bg-stone-50 p-3 text-sm">
                                 <p class="text-xs text-stone-500">Kecamatan asal pengiriman</p>
                                 <p class="font-semibold text-stone-800">{{ $originLabel ?? 'Belum diatur' }}</p>
