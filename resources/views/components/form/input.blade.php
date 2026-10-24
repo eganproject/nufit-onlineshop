@@ -10,6 +10,7 @@
     'id' => null,
     'label' => null,
     'hint' => null,
+    'tip' => null,
     'optional' => false,
     'value' => null,
     'type' => 'text',
@@ -25,7 +26,7 @@
     $invalid = FormField::hasError($name, $bag);
     $value = $key && ! $attributes->has('x-model') ? old($key, $value) : $value;
 @endphp
-<x-form.field :label="$label" :for="$id" :name="$name" :hint="$hint" :optional="$optional" :bag="$bag" :class="$wrapperClass">
+<x-form.field :label="$label" :for="$id" :name="$name" :hint="$hint" :tip="$tip" :optional="$optional" :bag="$bag" :class="$wrapperClass">
     <div class="relative">
         @if ($icon)
             <x-icon :name="$icon" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-stone-400" />
