@@ -28,6 +28,10 @@ return [
     // Lama log aktivitas admin disimpan (hari) sebelum dibersihkan `model:prune`.
     'activity_log_days' => (int) env('ACTIVITY_LOG_DAYS', 365),
 
+    // `db:seed` mengunduh foto katalog contoh dari nufit.id (sekali, disimpan di
+    // storage/app/public/seed/nufit). false = seeding tanpa gambar / offline.
+    'seed_images' => (bool) env('SEED_IMAGES', true),
+
     /*
     |--------------------------------------------------------------------------
     | Tampilan Toko
