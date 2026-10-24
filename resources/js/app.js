@@ -12,6 +12,7 @@ import articleEditor from './components/article-editor';
 import shareButtons from './components/share-buttons';
 import bestSellerPicker from './components/best-seller-picker';
 import cartAdd from './components/cart-add';
+import cartPage from './components/cart-page';
 import infoTip from './components/info-tip';
 import infiniteList from './components/infinite-list';
 
@@ -37,5 +38,6 @@ Alpine.data('infoTip', infoTip);
 Alpine.data('infiniteList', infiniteList);
 
 cartAdd();
+cartPage();
 
 Alpine.start();

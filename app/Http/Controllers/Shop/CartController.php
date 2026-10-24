@@ -16,12 +16,7 @@ class CartController extends Controller
 
     public function index(): View
     {
-        return view('shop.cart', [
-            'lines' => $this->cart->lines(),
-            'adjustments' => $this->cart->adjustments(),
-            'subtotal' => $this->cart->subtotal(),
-            'weight' => $this->cart->totalWeight(),
-        ]);
+        return view('shop.cart', $this->pageData());
     }
 
     /**
@@ -84,7 +79,11 @@ class CartController extends Controller
         return back()->with($type, $message);
     }
 
-    public function update(Request $request, string $line): RedirectResponse
+    /**
+     * Ubah jumlah satu baris. Dengan JS dibalas JSON berisi HTML isi keranjang yang baru
+     * (tanpa reload); tanpa JS kembali ke halaman keranjang.
+     */
+    public function update(Request $request, string $line): RedirectResponse|JsonResponse
     {
         $data = $request->validate(['quantity' => ['required', 'integer', 'min:0', 'max:999']]);
 
@@ -93,19 +92,55 @@ class CartController extends Controller
 
         $final = $this->cart->update($line, $data['quantity']);
 
-        if ($final < $data['quantity']) {
-            return back()->with('error', "Stok {$cartLine->name()} hanya tersisa {$cartLine->availableStock()}.");
+        [$type, $message] = match (true) {
+            $final < $data['quantity'] => ['error', "Stok {$cartLine->name()} hanya tersisa {$cartLine->availableStock()}."],
+            $final === 0 => ['success', "{$cartLine->name()} dihapus dari keranjang."],
+            default => [null, null],
+        };
+
+        if ($request->expectsJson()) {
+            return $this->cartJson($type, $message);
         }
 
-        return back();
+        return $type ? back()->with($type, $message) : back();
     }
 
-    public function destroy(string $line): RedirectResponse
+    public function destroy(Request $request, string $line): RedirectResponse|JsonResponse
     {
         $cartLine = $this->cart->find($line);
         $this->cart->remove($line);
 
-        return back()->with('success', ($cartLine?->name() ?? 'Produk').' dihapus dari keranjang.');
+        $message = ($cartLine?->name() ?? 'Produk').' dihapus dari keranjang.';
+
+        if ($request->expectsJson()) {
+            return $this->cartJson('success', $message);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /** @return array<string, mixed> data halaman keranjang (juga dipakai partial isi keranjang) */
+    private function pageData(): array
+    {
+        return [
+            'lines' => $this->cart->lines(),
+            'adjustments' => $this->cart->adjustments(),
+            'subtotal' => $this->cart->subtotal(),
+            'weight' => $this->cart->totalWeight(),
+        ];
+    }
+
+    private function cartJson(?string $type, ?string $message): JsonResponse
+    {
+        // Render dulu: lines() bisa membuang item yang stoknya habis, baru jumlahnya dihitung.
+        $html = view('shop.partials.cart-content', $this->pageData())->render();
+
+        return response()->json([
+            'type' => $type,
+            'message' => $message,
+            'count' => $this->cart->count(),
+            'html' => $html,
+        ]);
     }
 
     private function failed(Request $request, string $message, bool $withInput = false): RedirectResponse|JsonResponse

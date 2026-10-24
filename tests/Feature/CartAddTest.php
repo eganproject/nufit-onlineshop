@@ -68,4 +68,39 @@ class CartAddTest extends TestCase
 
         $this->get(route('products.index'))->assertOk()->assertSee('data-cart-add', false);
     }
+
+    public function test_cart_page_updates_return_fresh_html_without_reload(): void
+    {
+        $product = Product::factory()->create(['name' => 'Kaos Kaki', 'stock' => 3, 'price' => 20000]);
+        $this->post(route('cart.store', $product), ['quantity' => 1]);
+        $key = (string) $product->id;
+
+        $this->get(route('cart.index'))->assertOk()->assertSee('data-cart-line', false)->assertSee('data-cart-root', false);
+
+        $this->patchJson(route('cart.update', $key), ['quantity' => 2])
+            ->assertOk()
+            ->assertJson(['type' => null, 'count' => 2])
+            ->assertJsonPath('html', fn (string $html) => str_contains($html, 'Rp40.000') && str_contains($html, '2 item'));
+
+        $this->patchJson(route('cart.update', $key), ['quantity' => 5])
+            ->assertOk()
+            ->assertJson(['type' => 'error', 'message' => 'Stok Kaos Kaki hanya tersisa 3.', 'count' => 3]);
+
+        $this->patchJson(route('cart.update', $key), ['quantity' => 0])
+            ->assertOk()
+            ->assertJson(['type' => 'success', 'count' => 0])
+            ->assertJsonPath('html', fn (string $html) => str_contains($html, 'Keranjangmu masih kosong'));
+    }
+
+    public function test_cart_page_remove_returns_json(): void
+    {
+        $product = Product::factory()->create(['name' => 'Handuk', 'stock' => 3]);
+        $this->post(route('cart.store', $product));
+
+        $this->deleteJson(route('cart.destroy', (string) $product->id))
+            ->assertOk()
+            ->assertJson(['type' => 'success', 'message' => 'Handuk dihapus dari keranjang.', 'count' => 0]);
+
+        $this->patchJson(route('cart.update', (string) $product->id), ['quantity' => 1])->assertNotFound();
+    }
 }
