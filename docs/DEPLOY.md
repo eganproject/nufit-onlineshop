@@ -54,7 +54,7 @@ opcache.validate_timestamps = 0   ; deploy.sh me-reload PHP-FPM setelah update
 sudo mysql
 ```
 
-Bila `sudo mysql` ditolak karena root sudah berpassword, pakai `mysql -u root -p`. Bila MySQL menolak password user baru (ERROR 1819), buat password acak yang memenuhi aturan: `echo "Mga_$(openssl rand -hex 12)"`.
+Bila `sudo mysql` ditolak karena root sudah berpassword, pakai `mysql -u root -p`. Bila MySQL menolak password user baru (ERROR 1819), buat password acak yang memenuhi aturan: `echo "Nf_$(openssl rand -hex 12)"`.
 
 ```sql
 CREATE DATABASE nufit_onlineshop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -132,6 +132,12 @@ bash deploy/deploy.sh
 ```
 
 Skrip ini: mode perawatan → `git pull` → composer → build aset → migrasi → `optimize` → restart worker → situs aktif lagi → `shop:check`.
+
+Jalankan sebagai user pemilik folder aplikasi (bukan root). Bila Node.js server hanya terpasang untuk root, pasang Node lewat nvm untuk user itu; skrip otomatis memuat `~/.nvm/nvm.sh`. Bila `APP_ENV` bukan `production`, paket dev Composer ikut terpasang supaya seeder contoh bisa jalan.
+
+### Situs review/staging
+
+Untuk situs percobaan yang boleh berisi data contoh: `APP_ENV=staging`, `APP_DEBUG=false`, `SEO_INDEXING=false`, `PAYMENT_DRIVER=fake`, `SHIPPING_DRIVER=fake`, lalu `composer install` (tanpa `--no-dev`) dan `php artisan migrate --seed --force`. Bila situsnya publik, ganti password akun staf contoh (`admin@`, `gudang@`, `cs@nufit.test`) karena bawaannya `password`.
 
 ---
 
