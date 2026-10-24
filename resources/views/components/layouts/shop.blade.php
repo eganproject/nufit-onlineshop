@@ -6,7 +6,7 @@
         ['label' => 'Semua Produk', 'url' => route('products.index'), 'active' => request()->routeIs('products.index') && ! request()->hasAny(['kategori', 'koleksi', 'promo', 'urut', 'q'])],
         ['label' => 'Terbaru', 'url' => route('products.index', ['urut' => 'terbaru']), 'active' => request('urut') === 'terbaru'],
         ['label' => 'Best Seller', 'url' => route('products.best-sellers'), 'active' => request()->routeIs('products.best-sellers')],
-        ['label' => 'Promo', 'url' => route('products.index', ['promo' => 1]), 'active' => request()->boolean('promo')],
+        ['label' => 'Promo', 'url' => route('products.index', ['promo' => 1]), 'active' => request()->boolean('promo'), 'promo' => true],
         ['label' => 'Artikel', 'url' => route('articles.index'), 'active' => request()->routeIs('articles.*')],
     ];
     $accountUrl = $user ? $user->homeRoute() : route('login');
@@ -19,6 +19,8 @@
     $navLink = 'relative flex h-full items-center text-[13px] font-medium tracking-wide transition hover:text-ink group-data-[clear]/header:hover:text-white';
     $navIdle = 'text-stone-600 group-data-[clear]/header:text-white/80';
     $navActive = 'text-ink group-data-[clear]/header:text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-brand-400';
+    // Menu Promo: merah lembut (warna diskon) supaya menonjol, tetap kalem.
+    $navPromo = 'gap-1.5 font-semibold text-accent-600 hover:text-accent-700 group-data-[clear]/header:text-accent-300 group-data-[clear]/header:hover:text-accent-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5';
     $iconBtn = 'relative grid size-11 place-items-center rounded-full transition hover:bg-sand-100 group-data-[clear]/header:hover:bg-white/10 lg:size-10';
 @endphp
 <x-layouts.base :title="$title" :description="$description" :image="$image" :canonical="$canonical" :type="$type" :noindex="$noindex" :viewport-fit="true" body-class="bg-white text-ink">
@@ -119,7 +121,13 @@
                         </button>
                     @endif
                     @foreach (array_slice($nav, 1) as $item)
-                        <a href="{{ $item['url'] }}" @mouseenter="cats = false" @class([$navLink, $navActive => $item['active'], $navIdle => ! $item['active']])>{{ $item['label'] }}</a>
+                        @if ($item['promo'] ?? false)
+                            <a href="{{ $item['url'] }}" @mouseenter="cats = false" @class([$navLink, $navPromo, 'after:bg-accent-500' => $item['active']])>
+                                <x-icon name="tag" class="size-3.5" /> {{ $item['label'] }}
+                            </a>
+                        @else
+                            <a href="{{ $item['url'] }}" @mouseenter="cats = false" @class([$navLink, $navActive => $item['active'], $navIdle => ! $item['active']])>{{ $item['label'] }}</a>
+                        @endif
                     @endforeach
                 </nav>
 
@@ -289,8 +297,8 @@
                     <ul class="mt-3 grid grid-cols-4 gap-2">
                         @foreach ([['Semua', 'cube', $nav[0]], ['Terbaru', 'sparkles', $nav[1]], ['Promo', 'tag', $nav[3]], ['Artikel', 'newspaper', $nav[4]]] as [$label, $icon, $item])
                             <li>
-                                <a href="{{ $item['url'] }}" class="flex flex-col items-center gap-2 rounded-2xl py-2 text-center text-xs font-medium text-stone-700 active:bg-sand-50">
-                                    <span @class(['grid size-12 place-items-center rounded-2xl', 'bg-ink text-white' => $item['active'], 'bg-sand-100 text-ink' => ! $item['active']])><x-icon :name="$icon" class="size-[22px]" /></span>
+                                <a href="{{ $item['url'] }}" @class(['flex flex-col items-center gap-2 rounded-2xl py-2 text-center text-xs font-medium active:bg-sand-50', 'text-accent-600' => $item['promo'] ?? false, 'text-stone-700' => ! ($item['promo'] ?? false)])>
+                                    <span @class(['grid size-12 place-items-center rounded-2xl', 'bg-ink text-white' => $item['active'], 'bg-accent-50 text-accent-600' => ! $item['active'] && ($item['promo'] ?? false), 'bg-sand-100 text-ink' => ! $item['active'] && ! ($item['promo'] ?? false)])><x-icon :name="$icon" class="size-[22px]" /></span>
                                     {{ $label }}
                                 </a>
                             </li>

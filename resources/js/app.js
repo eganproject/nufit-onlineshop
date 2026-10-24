@@ -13,6 +13,7 @@ import shareButtons from './components/share-buttons';
 import bestSellerPicker from './components/best-seller-picker';
 import cartAdd from './components/cart-add';
 import infoTip from './components/info-tip';
+import infiniteList from './components/infinite-list';
 
 window.Alpine = Alpine;
 
@@ -33,6 +34,7 @@ Alpine.data('articleEditor', articleEditor);
 Alpine.data('shareButtons', shareButtons);
 Alpine.data('bestSellerPicker', bestSellerPicker);
 Alpine.data('infoTip', infoTip);
+Alpine.data('infiniteList', infiniteList);
 
 cartAdd();
 

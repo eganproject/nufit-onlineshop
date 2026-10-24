@@ -49,12 +49,13 @@
                 </div>
                 <a href="{{ route('products.index') }}" class="link-arrow">Katalog <x-icon name="arrow-right" class="size-4" /></a>
             </div>
-            <div class="mt-7 grid grid-cols-2 gap-x-3 gap-y-8 sm:mt-9 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4">
-                @foreach ($others as $product)
-                    <x-product-card :product="$product" />
-                @endforeach
-            </div>
-            <div class="mt-14">{{ $others->links() }}</div>
+            @fragment('infinite')
+                <x-infinite-list :paginator="$others" label="produk" class="mt-7 grid grid-cols-2 gap-x-3 gap-y-8 sm:mt-9 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+                    @foreach ($others as $product)
+                        <x-product-card :product="$product" />
+                    @endforeach
+                </x-infinite-list>
+            @endfragment
         @elseif ($ranked->isEmpty())
             <x-empty-state title="Belum ada produk" />
         @endif

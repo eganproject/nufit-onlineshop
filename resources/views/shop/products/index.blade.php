@@ -273,12 +273,13 @@
                     </x-empty-state>
                 </div>
             @else
-                <div class="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4">
-                    @foreach ($products as $product)
-                        <x-product-card :product="$product" :eager="$loop->index < 4" />
-                    @endforeach
-                </div>
-                <div class="mt-14">{{ $products->links() }}</div>
+                @fragment('infinite')
+                    <x-infinite-list :paginator="$products" label="produk" class="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+                        @foreach ($products as $product)
+                            <x-product-card :product="$product" :eager="$products->onFirstPage() && $loop->index < 4" />
+                        @endforeach
+                    </x-infinite-list>
+                @endfragment
             @endif
         </div>
 
