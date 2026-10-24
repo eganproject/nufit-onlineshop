@@ -5,7 +5,7 @@
     $nav = [
         ['label' => 'Semua Produk', 'url' => route('products.index'), 'active' => request()->routeIs('products.index') && ! request()->hasAny(['kategori', 'koleksi', 'promo', 'urut', 'q'])],
         ['label' => 'Terbaru', 'url' => route('products.index', ['urut' => 'terbaru']), 'active' => request('urut') === 'terbaru'],
-        ['label' => 'Best Seller', 'url' => route('products.index', ['urut' => 'terlaris']), 'active' => request('urut') === 'terlaris'],
+        ['label' => 'Best Seller', 'url' => route('products.best-sellers'), 'active' => request()->routeIs('products.best-sellers')],
         ['label' => 'Promo', 'url' => route('products.index', ['promo' => 1]), 'active' => request()->boolean('promo')],
         ['label' => 'Artikel', 'url' => route('articles.index'), 'active' => request()->routeIs('articles.*')],
     ];
