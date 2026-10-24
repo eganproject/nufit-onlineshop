@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|string
     {
         $category = $request->filled('kategori')
             ? ArticleCategory::where('slug', $request->string('kategori'))->first()
@@ -33,7 +33,7 @@ class ArticleController extends Controller
             'activeCategory' => $category,
             'tag' => $tag,
             'search' => $search,
-        ]);
+        ])->fragmentIf(ProductController::wantsNextChunk($request), 'infinite');
     }
 
     public function show(Request $request, Article $article): View

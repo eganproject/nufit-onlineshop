@@ -20,7 +20,7 @@ class ProductController extends Controller
         'nama' => 'Nama A-Z',
     ];
 
-    public function index(Request $request): View
+    public function index(Request $request): View|string
     {
         $category = $request->filled('kategori')
             ? Category::active()->with('parent')->where('slug', $request->string('kategori'))->first()
@@ -83,14 +83,14 @@ class ProductController extends Controller
             'sorts' => self::SORTS,
             'minPrice' => $minPrice,
             'maxPrice' => $maxPrice,
-        ]);
+        ])->fragmentIf(self::wantsNextChunk($request), 'infinite');
     }
 
     /**
      * Halaman Best Seller: daftar berperingkat sesuai pengaturan admin (otomatis/manual),
      * lalu sisa katalog di bawahnya.
      */
-    public function bestSellers(Request $request, BestSellers $bestSellers): View
+    public function bestSellers(Request $request, BestSellers $bestSellers): View|string
     {
         $ranked = $bestSellers->forHome();
 
@@ -105,7 +105,13 @@ class ProductController extends Controller
                 ->paginate(12)
                 ->withQueryString()
                 ->fragment('lainnya'),
-        ]);
+        ])->fragmentIf(self::wantsNextChunk($request), 'infinite');
+    }
+
+    /** Permintaan lanjutan dari <x-infinite-list>: kirim fragmen daftar saja. */
+    public static function wantsNextChunk(Request $request): bool
+    {
+        return $request->hasHeader('X-Infinite') && $request->integer('page') > 1;
     }
 
     public function show(Request $request, Product $product, ReviewService $reviewService): View

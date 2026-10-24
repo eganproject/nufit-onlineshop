@@ -47,6 +47,27 @@ class CatalogTest extends TestCase
         ], $overrides);
     }
 
+    public function test_catalog_loads_more_products_as_a_fragment_while_scrolling(): void
+    {
+        Product::factory()->count(14)->create();
+
+        // Halaman pertama: tautan "Tampilkan lebih banyak" ke ?page=2 (juga untuk tanpa JS & mesin pencari).
+        $this->get(route('products.index'))->assertOk()
+            ->assertSee('Tampilkan lebih banyak')
+            ->assertSee('rel="next"', false)
+            ->assertSee('Menampilkan')
+            ->assertSee('dari 14 produk');
+
+        // Permintaan lanjutan dari scroll: hanya potongan daftar, tanpa layout.
+        $chunk = $this->withHeader('X-Infinite', '1')->get(route('products.index', ['page' => 2]))->assertOk();
+        $this->assertStringContainsString('data-infinite-items', $chunk->getContent());
+        $this->assertStringNotContainsString('<html', $chunk->getContent());
+        $this->assertSame(2, substr_count($chunk->getContent(), '<article'));
+
+        // Tanpa header: halaman 2 tetap halaman utuh.
+        $this->flushHeaders()->get(route('products.index', ['page' => 2]))->assertOk()->assertSee('<html', false);
+    }
+
     public function test_category_page_hero_uses_category_image_or_falls_back_to_illustration(): void
     {
         $parent = Category::factory()->create(['name' => 'Lari', 'image_path' => 'categories/lari.jpg']);

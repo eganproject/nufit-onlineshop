@@ -57,9 +57,9 @@
                 @endif
             </nav>
 
-            <div class="mt-5 grid gap-8 lg:mt-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
+            <div class="mt-5 grid gap-8 md:grid-cols-12 md:gap-8 lg:mt-8 lg:gap-12 xl:gap-16">
                 {{-- Galeri --}}
-                <div class="min-w-0 lg:col-span-7">
+                <div class="min-w-0 md:col-span-6 lg:col-span-7">
                     <div class="lg:flex lg:gap-4">
                         {{-- Thumbnail vertikal (desktop) --}}
                         @if ($images->count() > 1)
@@ -80,7 +80,7 @@
                                 <x-product-image :product="$product" :eager="true" class="aspect-square overflow-hidden rounded-2xl" />
                             @else
                                 {{-- Mobile: geser dengan jari --}}
-                                <div x-ref="swipe" class="no-scrollbar -mx-4 flex snap-x snap-mandatory overflow-x-auto bg-sand-100 sm:mx-0 sm:rounded-2xl lg:hidden"
+                                <div x-ref="swipe" class="no-scrollbar -mx-4 flex snap-x snap-mandatory overflow-x-auto bg-sand-100 sm:mx-0 sm:rounded-2xl md:hidden"
                                      @scroll.debounce.80ms="active = Math.round($el.scrollLeft / $el.clientWidth)"
                                      x-effect="const i = active; $nextTick(() => { if (Math.round($el.scrollLeft / $el.clientWidth) !== i) $el.scrollTo({ left: i * $el.clientWidth, behavior: 'smooth' }) })">
                                     @foreach ($images as $index => $image)
@@ -89,8 +89,8 @@
                                     @endforeach
                                 </div>
 
-                                {{-- Desktop: foto utama --}}
-                                <div class="relative hidden aspect-square overflow-hidden rounded-2xl bg-sand-100 lg:block">
+                                {{-- Tablet & desktop: foto utama --}}
+                                <div class="relative hidden aspect-square overflow-hidden rounded-2xl bg-sand-100 md:block">
                                     @foreach ($images as $index => $image)
                                         <img src="{{ $image->url() }}" alt="{{ $product->name }} — foto {{ $index + 1 }}"
                                              @if ($index > 0) loading="lazy" x-cloak @endif decoding="async"
@@ -106,7 +106,20 @@
                                 </div>
 
                                 @if ($images->count() > 1)
-                                    <div class="mt-3 flex justify-center gap-1.5 lg:hidden" aria-hidden="true">
+                                    {{-- Thumbnail mendatar (tablet) --}}
+                                    <div class="no-scrollbar mt-3 hidden gap-2 overflow-x-auto p-0.5 md:flex lg:hidden">
+                                        @foreach ($images as $index => $image)
+                                            <button type="button" @click="active = {{ $index }}"
+                                                    class="aspect-square w-16 shrink-0 overflow-hidden rounded-xl bg-sand-100 ring-1 transition"
+                                                    :class="active === {{ $index }} ? 'ring-ink' : 'ring-transparent opacity-60 hover:opacity-100'"
+                                                    aria-label="Foto {{ $index + 1 }}">
+                                                <img src="{{ $image->url() }}" alt="" loading="lazy" class="size-full object-cover">
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                    {{-- HP: penanda posisi + nomor foto --}}
+                                    <span class="pointer-events-none absolute right-3 bottom-3 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-white tabular-nums backdrop-blur md:hidden" x-text="`${active + 1}/{{ $images->count() }}`">1/{{ $images->count() }}</span>
+                                    <div class="mt-3 flex justify-center gap-1.5 md:hidden" aria-hidden="true">
                                         @foreach ($images as $index => $image)
                                             <span class="h-1 rounded-full transition-all" :class="active === {{ $index }} ? 'w-6 bg-ink' : 'w-1.5 bg-stone-300'"></span>
                                         @endforeach
@@ -126,9 +139,9 @@
                     </div>
                 </div>
 
-                {{-- Info produk (lengket di desktop) --}}
-                <div class="lg:col-span-5">
-                    <div class="lg:sticky lg:top-28">
+                {{-- Info produk (lengket di tablet & desktop) --}}
+                <div class="min-w-0 md:col-span-6 lg:col-span-5">
+                    <div class="md:sticky md:top-24 lg:top-28">
                         <div class="flex items-center justify-between gap-3">
                             @if ($product->category)
                                 <a href="{{ route('products.index', ['kategori' => $product->category->slug]) }}" class="kicker hover:text-ink">{{ $product->category->name }}</a>
@@ -142,7 +155,7 @@
                             @endif
                         </div>
 
-                        <h1 class="display mt-3 text-[1.75rem] leading-[1.12] sm:text-4xl">{{ $product->name }}</h1>
+                        <h1 class="display mt-3 text-[1.75rem] leading-[1.12] sm:text-[2rem] lg:text-4xl">{{ $product->name }}</h1>
 
                         {{-- Harga --}}
                         <div class="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-2">
@@ -209,7 +222,7 @@
                                     <p x-ref="variantHint" x-show="needsVariant" class="mt-4 hidden text-sm font-medium text-accent-600">Pilih {{ mb_strtolower($product->variant_label ?: 'varian') }} terlebih dahulu.</p>
                                 </form>
                                 {{-- Tombol di luar <form>: tombol wishlist punya form sendiri, dan form bersarang membuat "Beli sekarang" tidak terkirim. --}}
-                                <div class="mt-5 flex gap-2">
+                                <div class="mt-5 flex gap-2" x-init="'IntersectionObserver' in window && new IntersectionObserver(([e]) => $dispatch('buy-cta', e.isIntersecting || e.boundingClientRect.top > 0)).observe($el)">
                                     <button form="add-to-cart" class="btn btn-brand btn-pill min-h-14 flex-1 text-[15px]"><x-icon name="bag" class="size-5" /> Tambah ke keranjang</button>
                                     <x-wishlist-button :product="$product" variant="outline" class="shrink-0" />
                                 </div>
@@ -308,7 +321,7 @@
         </div>
 
         @if ($related->isNotEmpty())
-            <section class="section-gap pb-28 lg:pb-0" aria-labelledby="related-title"
+            <section class="section-gap pb-28 md:pb-0" aria-labelledby="related-title"
                      x-data="{ go(d) { const t = this.$refs.track; t.scrollBy({ left: d * t.clientWidth * 0.8, behavior: 'smooth' }) } }">
                 <div class="shop-container flex items-end justify-between gap-4">
                     <div>
@@ -317,7 +330,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         @if ($product->category)
-                            <a href="{{ route('products.index', ['kategori' => $product->category->slug]) }}" class="link-arrow mr-1 sm:mr-3">Lihat semua <x-icon name="arrow-right" class="size-4" /></a>
+                            <a href="{{ route('products.index', ['kategori' => $product->category->slug]) }}" class="link-arrow mr-1 whitespace-nowrap sm:mr-3">Lihat semua <x-icon name="arrow-right" class="size-4" /></a>
                         @endif
                         <button type="button" @click="go(-1)" class="hidden size-11 place-items-center rounded-full border border-stone-200 transition hover:border-ink sm:grid" aria-label="Geser ke kiri"><x-icon name="arrow-left" class="size-[18px]" /></button>
                         <button type="button" @click="go(1)" class="hidden size-11 place-items-center rounded-full border border-stone-200 transition hover:border-ink sm:grid" aria-label="Geser ke kanan"><x-icon name="arrow-right" class="size-[18px]" /></button>
@@ -332,12 +345,15 @@
                 </div>
             </section>
         @else
-            <div class="pb-28 lg:pb-0"></div>
+            <div class="pb-28 md:pb-0"></div>
         @endif
 
         {{-- Bar beli di mobile --}}
         @if ($product->inStock())
-            <div class="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+            {{-- Muncul setelah tombol beli utama lewat dari layar (tanpa JS: selalu tampil). --}}
+            <div x-data="{ hidden: false }" x-init="hidden = 'IntersectionObserver' in window" @buy-cta.window="hidden = $event.detail"
+                 :class="hidden && 'pointer-events-none translate-y-full opacity-0'"
+                 class="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200/70 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md transition duration-300 md:hidden">
                 <div class="flex items-center gap-2 px-4 py-3">
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-xs text-stone-500">{{ $product->name }}</p>
