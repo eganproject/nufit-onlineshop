@@ -4,25 +4,19 @@ namespace Database\Seeders;
 
 use App\Enums\ReviewStatus;
 use App\Enums\StaffRole;
-use App\Enums\StockMovementType;
 use App\Enums\UserRole;
 use App\Enums\VoucherType;
-use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\ProductCollection;
 use App\Models\ProductReview;
 use App\Models\User;
 use App\Models\Voucher;
-use App\Services\Catalog\StockService;
 use App\Services\Reviews\ReviewService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
-    public function __construct(private readonly StockService $stock) {}
-
     public function run(): void
     {
         // Data contoh (akun berpassword "password", pesanan palsu) tidak boleh masuk server produksi.
@@ -80,8 +74,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->seedCatalog();
-        $this->seedCollections();
+        $this->call(CatalogSeeder::class);
         // Tanpa event model supaya ratusan pesanan contoh tidak mengantrekan email.
         Order::withoutEvents(fn () => $this->call(DemoOrderSeeder::class));
         $this->seedReviews();
@@ -137,185 +130,4 @@ class DatabaseSeeder extends Seeder
             $reviewService->syncSummary($product);
         });
     }
-
-    private function seedCatalog(): void
-    {
-        // Kategori => [subkategori => [[nama, harga, harga coret|null, berat gram, unggulan]]].
-        // Kunci subkategori '' = produk langsung di kategori induk.
-        $catalog = [
-            'Running' => [
-                'Running Belt' => [
-                    ['Versa Running Belt', 78000, 99000, 120, true],
-                    ['Running Belt Hydro dengan Botol 250ml', 135000, 159000, 260, false],
-                ],
-                'Topi & Visor' => [
-                    ['Topi Visor Hat Quick Dry', 63000, 79000, 80, true],
-                    ['Running Cap Ultralight', 85000, null, 70, false],
-                ],
-                'Kaos Kaki & Manset' => [
-                    ['Kaos Kaki Lari Anti Lecet', 39000, null, 60, false],
-                    ['Manset Lengan UV Protection', 45000, 59000, 50, false],
-                ],
-            ],
-            'Yoga & Pilates' => [
-                '' => [
-                    ['Nu Shape Aura Flare Yoga Pants', 112000, 149000, 250, true],
-                    ['Matras Yoga TPE 6mm', 189000, 239000, 900, true],
-                    ['Pilates Ring Magic Circle', 99000, null, 450, false],
-                    ['Yoga Block EVA', 55000, null, 200, false],
-                ],
-            ],
-            'Workout' => [
-                '' => [
-                    ['Wrist & Ankle Weight Bangles', 209000, 249000, 1100, true],
-                    ['Skipping Rope Premium', 69000, 89000, 250, false],
-                    ['Resistance Band Set 5 Level', 129000, 169000, 400, true],
-                    ['Gym Gloves Grip Pro', 89000, null, 150, false],
-                ],
-            ],
-            'Padel' => [
-                '' => [
-                    ['Bola Padel Isi 3', 90000, null, 200, true],
-                    ['Headband Padel Sweat Band', 35000, 45000, 40, false],
-                    ['Overgrip Raket Padel (3 pcs)', 49000, null, 60, false],
-                ],
-            ],
-            'Swimming' => [
-                '' => [
-                    ['Silicone Swimming Cap', 42000, 49000, 80, true],
-                    ['Kacamata Renang Anti Fog', 79000, 99000, 120, false],
-                    ['Earplug & Nose Clip Renang', 29000, null, 30, false],
-                ],
-            ],
-            'Support & Recovery' => [
-                '' => [
-                    ['Kinesiology Tape 5cm x 5m', 41000, null, 90, true],
-                    ['Cohesive Bandage Elastis', 19000, null, 40, false],
-                    ['Knee Support Compression', 95000, 119000, 150, false],
-                ],
-            ],
-            'Essentials' => [
-                '' => [
-                    ['Botol Minum Sport 750ml BPA Free', 75000, 95000, 200, true],
-                    ['Travel Pouch Serbaguna', 19000, null, 60, false],
-                    ['Handuk Microfiber Quick Dry', 59000, 75000, 180, false],
-                ],
-            ],
-            'Apparel' => [
-                '' => [
-                    ['Nu Shape Aura Jacket with Hoodie', 228000, 289000, 350, true],
-                    ['Sport Bra Medium Support', 135000, null, 150, false],
-                    ['Rok Olahraga Skort 2-in-1', 149000, 179000, 220, false],
-                ],
-            ],
-        ];
-
-        $order = 0;
-        foreach ($catalog as $categoryName => $groups) {
-            $category = Category::updateOrCreate(['slug' => Str::slug($categoryName)], [
-                'name' => $categoryName,
-                'description' => "Perlengkapan {$categoryName} pilihan NuFit untuk latihan yang lebih nyaman.",
-                'is_active' => true,
-                'sort_order' => $order++,
-            ]);
-
-            foreach ($groups as $subName => $products) {
-                $target = $subName === '' ? $category : Category::updateOrCreate(['slug' => Str::slug($subName)], [
-                    'parent_id' => $category->id,
-                    'name' => $subName,
-                    'is_active' => true,
-                ]);
-
-                foreach ($products as [$name, $price, $compare, $weight, $featured]) {
-                    $this->seedProduct($target, $name, $price, $compare, $weight, $featured);
-                }
-            }
-        }
-    }
-
-    /** Koleksi / aktivitas contoh (warna ubin kosong = palet kalem bawaan beranda): satu produk bisa masuk beberapa koleksi (mis. botol di Running & Workout). */
-    private function seedCollections(): void
-    {
-        $collections = [
-            ['Running', 'running', 'ink', 'Lari lebih jauh, tetap nyaman', ['running', 'kaos-kaki-lari-anti-lecet', 'botol-minum-sport-750ml-bpa-free', 'handuk-microfiber-quick-dry', 'kinesiology-tape-5cm-x-5m']],
-            ['Yoga & Pilates', 'yoga', null, null, ['yoga-pilates', 'handuk-microfiber-quick-dry', 'sport-bra-medium-support']],
-            ['Workout', 'workout', null, null, ['workout', 'botol-minum-sport-750ml-bpa-free', 'handuk-microfiber-quick-dry', 'sport-bra-medium-support', 'knee-support-compression']],
-            ['Padel', 'padel', null, null, ['padel', 'rok-olahraga-skort-2-in-1', 'topi-visor-hat-quick-dry']],
-            ['Swimming', 'swimming', null, null, ['swimming', 'travel-pouch-serbaguna']],
-            ['Support & Recovery', 'support', null, null, ['support-recovery']],
-            ['Essentials', 'essentials', null, null, ['essentials']],
-            ['Apparel', 'apparel', null, null, ['apparel', 'nu-shape-aura-flare-yoga-pants', 'manset-lengan-uv-protection']],
-        ];
-
-        foreach ($collections as $order => [$name, $icon, $tone, $tagline, $members]) {
-            $collection = ProductCollection::updateOrCreate(['slug' => Str::slug($name)], [
-                'name' => $name,
-                'tagline' => $tagline,
-                'description' => "Perlengkapan {$name} pilihan NuFit, dari berbagai kategori.",
-                'icon' => $icon,
-                'tone' => $tone,
-                'is_active' => true,
-                'show_on_home' => true,
-                'sort_order' => $order,
-            ]);
-
-            // Slug kategori = semua produk di kategori itu (termasuk subkategori); selain itu slug produk.
-            $ids = collect($members)->flatMap(function (string $slug) {
-                $category = Category::where('slug', $slug)->first();
-
-                return $category
-                    ? Product::whereIn('category_id', $category->familyIds())->pluck('id')
-                    : Product::where('slug', $slug)->pluck('id');
-            })->unique()->all();
-
-            $collection->products()->sync($ids);
-        }
-    }
-
-    private function seedProduct(Category $category, string $name, int $price, ?int $compare, int $weight, bool $featured): void
-    {
-        $product = Product::updateOrCreate(['slug' => Str::slug($name)], [
-            'category_id' => $category->id,
-            'name' => $name,
-            'sku' => 'NF-'.Str::upper(Str::substr(md5($name), 0, 6)),
-            'description' => "{$name} dari NuFit, nyaman dipakai untuk latihan rutin maupun aktivitas harian.\n\n• Bahan berkualitas & awet\n• Garansi tukar 7 hari bila cacat produksi\n• Siap kirim hari ini",
-            'price' => $price,
-            'compare_at_price' => $compare,
-            'weight' => $weight,
-            'is_active' => true,
-            'is_featured' => $featured,
-        ]);
-
-        if (! $product->wasRecentlyCreated) {
-            return;
-        }
-
-        if (isset(self::VARIANTS[$name])) {
-            [$label, $variants] = self::VARIANTS[$name];
-            $product->update(['variant_label' => $label]);
-
-            foreach ($variants as $position => [$variantName, $variantPrice]) {
-                $variant = $product->variants()->create([
-                    'name' => $variantName,
-                    'sku' => $product->sku.'-'.Str::upper(Str::slug($variantName, '')),
-                    'price' => $variantPrice ?? $price,
-                    'compare_at_price' => $compare ? $compare + (($variantPrice ?? $price) - $price) : null,
-                    'is_active' => true,
-                    'sort_order' => $position,
-                ]);
-                $this->stock->adjust($product, $variant, random_int(0, 5) === 0 ? 0 : random_int(5, 40), StockMovementType::Initial);
-            }
-        } else {
-            $this->stock->adjust($product, null, random_int(0, 4) === 0 ? random_int(1, 4) : random_int(10, 80), StockMovementType::Initial);
-        }
-    }
-
-    /** Contoh varian: nama produk => [judul pilihan, [[nama, harga|null]]]. */
-    private const VARIANTS = [
-        'Nu Shape Aura Flare Yoga Pants' => ['Ukuran', [['S', null], ['M', null], ['L', null], ['XL', 119000]]],
-        'Nu Shape Aura Jacket with Hoodie' => ['Warna', [['Black', null], ['Navy', null], ['Mocca', null], ['Smoky Grey', null]]],
-        'Wrist & Ankle Weight Bangles' => ['Berat', [['0,5 kg', 121000], ['1 kg', null], ['1,5 kg', 259000]]],
-        'Silicone Swimming Cap' => ['Warna', [['Hitam', null], ['Biru', null], ['Pink', null]]],
-        'Matras Yoga TPE 6mm' => ['Warna', [['Purple', null], ['Grey', null], ['Blue', null]]],
-    ];
 }

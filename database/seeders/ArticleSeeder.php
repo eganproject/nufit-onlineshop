@@ -29,7 +29,7 @@ class ArticleSeeder extends Seeder
                 'title' => '7 Persiapan Lari Pagi untuk Pemula Supaya Tidak Cepat Lelah',
                 'excerpt' => 'Baru mulai rutin lari? Persiapan kecil sebelum keluar rumah bikin lari lebih nyaman, aman, dan konsisten.',
                 'tags' => ['lari', 'pemula', 'tips'],
-                'products' => 'Running',
+                'products' => 'Running Belt',
                 'days' => 2,
                 'body' => '<p>Lari adalah olahraga paling mudah dimulai: cukup sepatu dan niat. Tapi beberapa persiapan sederhana membuat bedanya terasa sejak kilometer pertama.</p>'
                     .'<h2>1. Pemanasan 5–10 menit</h2><p>Jalan cepat, leg swing, dan high knee membantu otot dan sendi siap bergerak sehingga risiko cedera berkurang.</p>'
