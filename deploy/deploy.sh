@@ -6,6 +6,19 @@ set -euo pipefail
 
 BRANCH="${BRANCH:-main}"
 
+# Node dari nvm milik user ini (bila ada), mis. server yang Node-nya hanya untuk root.
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+    # shellcheck disable=SC1091
+    . "$HOME/.nvm/nvm.sh" >/dev/null
+fi
+
+# Paket dev (Faker dkk.) hanya dipasang di luar produksi, supaya seeder contoh bisa jalan di staging.
+APP_ENV_VALUE="$(grep -E '^APP_ENV=' .env 2>/dev/null | cut -d= -f2 | tr -d '"' || true)"
+COMPOSER_DEV_FLAG="--no-dev"
+if [ -n "$APP_ENV_VALUE" ] && [ "$APP_ENV_VALUE" != "production" ]; then
+    COMPOSER_DEV_FLAG=""
+fi
+
 echo "==> Mode perawatan"
 php artisan down --refresh=15 --retry=60 || true
 
@@ -16,7 +29,7 @@ echo "==> Ambil kode terbaru ($BRANCH)"
 git pull --ff-only origin "$BRANCH"
 
 echo "==> Dependency PHP"
-composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+composer install $COMPOSER_DEV_FLAG --prefer-dist --no-interaction --optimize-autoloader
 
 echo "==> Build aset"
 npm ci --no-audit --no-fund
